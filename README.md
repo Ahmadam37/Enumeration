@@ -663,7 +663,158 @@ we learned how to perform SMB server reconnaissance and identify and extract inf
 
 
 
+# Web Server Enumeration
+Apache enumeration is a crucial step in the reconnaissance phase of a penetration test, where the goal is to gather as much information as possible about the Apache web server being targeted. This information can help in identifying potential vulnerabilities or misconfigurations that can be exploited later in the test. In this lab, we will learn about Apache enumeration using the Metasploit framework modules.
 
+
+Here we will know when i will use this approach:
+
+```bash
+nmap IP
+
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-07 19:26 IST
+Nmap scan report for example.com (IP)
+Host is up (0.000012s latency).
+Not shown: 999 closed tcp ports (reset)
+PORT   STATE SERVICE
+80/tcp open  http
+MAC Address: 02:42:C0:A1:A8:03 (Unknown)
+
+Nmap done: 1 IP address (1 host up) scanned in 0.14 seconds
+
+```
+If we see under service the http, then we can use this approach.
+
+Run the Metasploit auxiliary modules against the target one-by-one.
+
+```bash
+use auxiliary/scanner/http/http_version
+set RHOSTS IP
+run
+```
+
+```bash
+use auxiliary/scanner/http/robots_txt
+set RHOSTS IP
+run
+```
+After we run the previus command and you will see all directores like below:
+```bash
+msf6 auxiliary(scanner/http/robots_txt) > run
+
+[*] [192.161.168.3] /robots.txt found
+[+] Contents of Robots.txt:
+# robots.txt for attackdefense 
+User-agent: test                     
+# Directories
+Allow: /webmail
+
+User-agent: *
+# Directories
+Disallow: /data
+Disallow: /secure
+
+[*] Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+
+```
+
+
+```bash
+use auxiliary/scanner/http/http_header
+set RHOSTS IP
+run
+```
+
+```bash
+use auxiliary/scanner/http/http_header
+set RHOSTS IP
+set TARGETURI /secure
+run
+```
+
+```bash
+use auxiliary/scanner/http/brute_dirs
+set RHOSTS IP
+run
+```
+
+```bash
+use auxiliary/scanner/http/dir_scanner
+set RHOSTS IP
+set DICTIONARY /usr/share/metasploit-framework/data/wordlists/directory.txt
+run
+```
+```bash
+use auxiliary/scanner/http/dir_listing
+set RHOSTS victim-1
+set PATH /data
+run
+```
+```bash
+use auxiliary/scanner/http/files_dir
+set RHOSTS victim-1
+set VERBOSE false
+run
+```
+```bash
+use auxiliary/scanner/http/http_put
+set RHOSTS victim-1
+set PATH /data
+set FILENAME test.txt
+set FILEDATA "Welcome To AttackDefense"
+run
+```
+
+We can observe that we have successfully written a file on the target server. If the file is already exists it will overwrite it. Let’s use wget and download the test.txt file and verify it.
+
+```bash
+wget http://victim-1:80/data/test.txt 
+cat test.txt
+```
+We can download the text.txt file and we can see it’s content i.e "Welcome To AttackDefense"
+
+Now, let’s use DELETE method and delete the text.file
+
+Commands:
+```bash
+use auxiliary/scanner/http/http_put
+set RHOSTS victim-1
+set PATH /data
+set FILENAME test.txt
+set ACTION DELETE
+run
+```
+Let’s try to download the same file from the same path. This time we should receive 404 error. i.e file not found. Because we have deleted it.
+
+Command:
+
+```bash
+wget http://victim-1:80/data/test.txt 
+```
+Module 9: auxiliary/scanner/http/http_login
+
+Commands:
+```bash
+use auxiliary/scanner/http/http_login
+set RHOSTS victim-1
+set AUTH_URI /secure/
+set VERBOSE false
+run
+```
+Module 10: auxiliary/scanner/http/apache_userdir_enum
+
+Commands:
+```bash
+use auxiliary/scanner/http/apache_userdir_enum
+set USER_FILE /usr/share/metasploit-framework/data/wordlists/common_users.txt
+set RHOSTS victim-1
+set VERBOSE false
+run
+```
+
+Conclusion
+we learned about Apache enumeration using the Metasploit framework modules.
 
 # Lab Description:
 This lab focuses on enumeration techniques to identify and analyze running services on a target Linux machine. The goal is to explore and interact with the machine's services to uncover and capture hidden flags. Participants will apply their knowledge of network and system enumeration to identify misconfigurations, weak credentials, and potential security vulnerabilities.
