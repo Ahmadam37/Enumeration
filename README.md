@@ -476,6 +476,193 @@ RHOSTS => 1.1.1.1
 ```
 
 
+# SMB Enumeration.
+The Server Message Blocking it is share the file between local network.
+
+You can see if the target use SMB by doing this:
+
+```bash
+nmap -sV IP
+```
+
+RESULT:
+In here we see the version for all both ports under Version are using Samba, that's mean they use SMB.
+```bash
+┌──(root)-[~]
+└─# nmap -sV IP
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-07 17:16 IST
+Nmap scan report for example.com (IP)
+Host is up (0.000011s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT    STATE SERVICE     VERSION
+139/tcp open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: RECONLABS)
+445/tcp open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: RECONLABS)
+MAC Address: 02:42:C0:F7:D5:03 (Unknown)
+Service Info: Host: SAMBA-RECON
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 11.31 seconds
+```
+
+As well you can use This command to know the workgroup name of samba server.
+
+```bash
+┌──(root)-[~]
+└─# nmblookup -A IP
+Looking up status of IP
+        SAMBA-RECON     <00> -         H <ACTIVE> 
+        SAMBA-RECON     <03> -         H <ACTIVE> 
+        SAMBA-RECON     <20> -         H <ACTIVE> 
+        ..__MSBROWSE__. <01> - <GROUP> H <ACTIVE> 
+        RECONLABS       <00> - <GROUP> H <ACTIVE> 
+        RECONLABS       <1d> -         H <ACTIVE> 
+        RECONLABS       <1e> - <GROUP> H <ACTIVE> 
+
+        MAC Address = 00-00-00-00-00-00
+
+```
+Here you can know if the SMB using UDP or not by using this command.
+
+```bash
+nmap -sU --top-ports 25 IP
+
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-07 17:31 IST
+Nmap scan report for example.com (IP)
+Host is up (0.000066s latency).
+
+PORT      STATE         SERVICE
+53/udp    closed        domain
+67/udp    open|filtered dhcps
+68/udp    closed        dhcpc
+69/udp    closed        tftp
+111/udp   open|filtered rpcbind
+123/udp   closed        ntp
+135/udp   closed        msrpc
+137/udp   open          netbios-ns
+138/udp   open|filtered netbios-dgm
+139/udp   closed        netbios-ssn
+161/udp   closed        snmp
+162/udp   open|filtered snmptrap
+445/udp   closed        microsoft-ds
+500/udp   closed        isakmp
+514/udp   closed        syslog
+520/udp   open|filtered route
+631/udp   open|filtered ipp
+998/udp   open|filtered puparp
+1434/udp  open|filtered ms-sql-m
+1701/udp  open|filtered L2TP
+1900/udp  open|filtered upnp
+4500/udp  closed        nat-t-ike
+5353/udp  open|filtered zeroconf
+49152/udp open|filtered unknown
+49154/udp closed        unknown
+MAC Address: 02:42:C0:F7:D5:03 (Unknown)
+
+Nmap done: 1 IP address (1 host up) scanned in 8.90 seconds
+
+```
+
+Now we know what are ports open, after that we can do more of enumeration.
+
+
+## SMB Script Scanning
+
+
+Here you can search with NSE
+
+```bash
+ls -la /usr/share/nmap/scripts | grep -e "smb"
+
+
+
+-rw-r--r-- 1 root root  3753 Jun 20  2024 smb2-capabilities.nse
+-rw-r--r-- 1 root root  2689 Jun 20  2024 smb2-security-mode.nse
+-rw-r--r-- 1 root root  1408 Jun 20  2024 smb2-time.nse
+-rw-r--r-- 1 root root  5269 Jun 20  2024 smb2-vuln-uptime.nse
+-rw-r--r-- 1 root root 45061 Jun 20  2024 smb-brute.nse
+-rw-r--r-- 1 root root  5289 Jun 20  2024 smb-double-pulsar-backdoor.nse
+-rw-r--r-- 1 root root  4840 Jun 20  2024 smb-enum-domains.nse
+-rw-r--r-- 1 root root  5971 Jun 20  2024 smb-enum-groups.nse
+-rw-r--r-- 1 root root  8043 Jun 20  2024 smb-enum-processes.nse
+-rw-r--r-- 1 root root 27274 Jun 20  2024 smb-enum-services.nse
+-rw-r--r-- 1 root root 12017 Jun 20  2024 smb-enum-sessions.nse
+-rw-r--r-- 1 root root  6923 Jun 20  2024 smb-enum-shares.nse
+-rw-r--r-- 1 root root 12527 Jun 20  2024 smb-enum-users.nse
+-rw-r--r-- 1 root root  4418 Jun 20  2024 smb-flood.nse
+-rw-r--r-- 1 root root  7471 Jun 20  2024 smb-ls.nse
+-rw-r--r-- 1 root root  8758 Jun 20  2024 smb-mbenum.nse
+-rw-r--r-- 1 root root  8220 Jun 20  2024 smb-os-discovery.nse
+-rw-r--r-- 1 root root  4982 Jun 20  2024 smb-print-text.nse
+-rw-r--r-- 1 root root  1833 Jun 20  2024 smb-protocols.nse
+-rw-r--r-- 1 root root 63596 Jun 20  2024 smb-psexec.nse
+-rw-r--r-- 1 root root  5190 Jun 20  2024 smb-security-mode.nse
+-rw-r--r-- 1 root root  2424 Jun 20  2024 smb-server-stats.nse
+-rw-r--r-- 1 root root 14159 Jun 20  2024 smb-system-info.nse
+-rw-r--r-- 1 root root  7524 Jun 20  2024 smb-vuln-conficker.nse
+-rw-r--r-- 1 root root  6402 Jun 20  2024 smb-vuln-cve2009-3103.nse
+-rw-r--r-- 1 root root 23154 Jun 20  2024 smb-vuln-cve-2017-7494.nse
+-rw-r--r-- 1 root root  6545 Jun 20  2024 smb-vuln-ms06-025.nse
+-rw-r--r-- 1 root root  5386 Jun 20  2024 smb-vuln-ms07-029.nse
+-rw-r--r-- 1 root root  5688 Jun 20  2024 smb-vuln-ms08-067.nse
+-rw-r--r-- 1 root root  5647 Jun 20  2024 smb-vuln-ms10-054.nse
+-rw-r--r-- 1 root root  7214 Jun 20  2024 smb-vuln-ms10-061.nse
+-rw-r--r-- 1 root root  7344 Jun 20  2024 smb-vuln-ms17-010.nse
+-rw-r--r-- 1 root root  4400 Jun 20  2024 smb-vuln-regsvc-dos.nse
+-rw-r--r-- 1 root root  6586 Jun 20  2024 smb-vuln-webexec.nse
+-rw-r--r-- 1 root root  5084 Jun 20  2024 smb-webexec-exploit.nse
+
+```
+
+and you can choose what ever you want from it.
+
+Find the exact version of samba server by using appropriate nmap script.
+
+```bash
+nmap --script smb-os-discovery.nse -p 445 IP                                                                                            
+```
+
+
+Find the exact version of samba server by using smb_version metasploit module.
+
+```bash
+msfconsole -q
+use auxiliary/scanner/smb/smb_version
+set RHOSTS IP
+exploit
+```
+What is the NetBIOS computer name of samba server? Use appropriate nmap scripts.
+
+```bash
+nmap --script smb-os-discovery.nse -p 445 IP
+```
+
+Using smbclient determine whether anonymous connection (null session) is allowed on the samba server or not.
+
+```bash
+smbclient -L IP -N
+```
+
+If you have see the result that is mean the smb Anonymous connection is allowed since shares are displayed without requirement of password.
+
+
+
+Using rpcclient determine whether anonymous connection (null session) is allowed on the samba server or not.
+
+```bash
+┌──(root)-[~]
+└─# rpcclient -U "" -N demo.ine.local
+rpcclient $> 
+
+```
+Anonymous connection is allowed since no errors are thrown while connecting to samba serverwithout any credentials.
+
+
+
+Conclusion:
+we learned how to perform SMB server reconnaissance and identify and extract information from SMB servers on a network.
+
+
+
 
 
 # Lab Description:
